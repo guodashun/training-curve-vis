@@ -23,7 +23,7 @@ class CurveVis():
         assert len(csv_file) == len(labels), f"Invalid num of labels: {len(csv_file)} for csv_files but {len(labels)} for labels"
 
         for i in range(len(csv_file)):
-            data = self._load_training_data(csv_file[i])[:238]
+            data = self._load_training_data(csv_file[i])
             data = self._smooth_data(data, self.smooth_k)
             data = self._index_data(data)
             self._add_curve(data, labels[i])
