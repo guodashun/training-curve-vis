@@ -20,7 +20,7 @@ class BoxPlot:
         self.data[label] = data
 
     def show(self):
-        sns.boxplot(data=self.data)
+        sns.boxplot(data=self.data, width=0.5, fliersize=2)
         plt.title(self.title)
         plt.xlabel(self.x_label)
         plt.ylabel(self.y_label)

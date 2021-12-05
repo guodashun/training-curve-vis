@@ -1,3 +1,4 @@
+import math
 import pandas as pd
 import seaborn as sns
 import numpy as np
@@ -22,14 +23,14 @@ class CurveVis():
         assert len(csv_file) == len(labels), f"Invalid num of labels: {len(csv_file)} for csv_files but {len(labels)} for labels"
 
         for i in range(len(csv_file)):
-            data = self._load_training_data(csv_file[i])
-            data = self._smooth_data(data)
+            data = self._load_training_data(csv_file[i])[:238]
+            data = self._smooth_data(data, self.smooth_k)
             data = self._index_data(data)
             self._add_curve(data, labels[i])
 
 
     def _load_training_data(self, csv_file):
-        return pd.read_csv(csv_file)["Value"]
+        return pd.read_csv(csv_file)["Value"].to_numpy()
         
         
     def _load_some_other_data():
@@ -40,11 +41,21 @@ class CurveVis():
     def _smooth_data(data, k=5):
         raw_data = data.copy()
         sz = len(raw_data)
+
+        # padding
+        for i in range(int(k/2)):
+            raw_data = np.insert(raw_data, 0, raw_data[0])
+            raw_data = np.insert(raw_data, -1, raw_data[-1])
         sm_data = []
-        for i in range(k-1, sz):
+        # for i in range(k-1, sz):
+        #     sm_data_i = []
+        #     for j in range(k-1, -1, -1):
+        #         sm_data_i.append(raw_data[i-j])
+        #     sm_data.append(sm_data_i)
+        for i in range(int(k/2), sz+int(k/2)):
             sm_data_i = []
-            for j in range(k-1, -1, -1):
-                sm_data_i.append(raw_data[i-j])
+            for j in range(-int(k/2), int(k/2)):
+                sm_data_i.append(raw_data[i+j])
             sm_data.append(sm_data_i)
         return np.array(sm_data)
 
