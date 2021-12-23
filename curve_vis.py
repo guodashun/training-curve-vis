@@ -4,38 +4,55 @@ import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
 from pandas.core.frame import DataFrame
+from tensorboard.backend.event_processing import event_accumulator
+# from tensorboard.data import experimental
 
 class CurveVis():
+    sup_data_form = ['csv', 'tb']
     def __init__(
         self, 
-        csv_file, 
-        x_label  = 'step(s)', 
-        y_label  = 'loss',
-        labels   = ['curve1'],
-        smooth_k = 5
+        curve_file,
+        data_form = 'csv',
+        x_label   = 'step(s)', 
+        y_label   = 'loss',
+        labels    = ['curve1'],
+        smooth_k  = 5
     ) -> None:
+        assert data_form in self.sup_data_form, f"Invalid data form, current support form is {self.sup_data_form}."
+        self.data_form = data_form
         self.x_label = x_label
         self.y_label = y_label
         self.smooth_k = smooth_k
         
-        if isinstance(csv_file, str):
-            csv_file = [csv_file]
-        assert len(csv_file) == len(labels), f"Invalid num of labels: {len(csv_file)} for csv_files but {len(labels)} for labels"
+        if isinstance(curve_file, str):
+            curve_file = [curve_file]
+        assert len(curve_file) == len(labels), f"Invalid num of labels: {len(curve_file)} for curve_files but {len(labels)} for labels"
 
-        for i in range(len(csv_file)):
-            data = self._load_training_data(csv_file[i])
+        for i in range(len(curve_file)):
+            # if self.data_form == self.sup_data_form[0]:
+            #     data = self._load_csv_data(curve_file[i])[:]
+            # elif self.data_form == self.sup_data_form[1]:
+            #     data = self._load_tb_data(curve_file[i])
+            data = getattr(self, f'_load_{self.data_form}_data')(curve_file[i])[:]
             data = self._smooth_data(data, self.smooth_k)
             data = self._index_data(data)
             self._add_curve(data, labels[i])
 
 
-    def _load_training_data(self, csv_file):
+    def _load_csv_data(self, csv_file):
         return pd.read_csv(csv_file)["Value"].to_numpy()
         
-        
+    def _load_tb_data(self, log_file):
+        ea = event_accumulator.EventAccumulator(log_file)
+        # e = experimental.ExperimentFromDev('eQvoJyXJSOe4exdGep8YNQ')
+        # return e.get_scalars()
+
     def _load_some_other_data():
-        # TODO
-        pass
+        '''
+            data type must be 'numpy.array'
+            data shape is raw data without index
+        '''
+        raise NotImplementedError
         
     @staticmethod
     def _smooth_data(data, k=5):
